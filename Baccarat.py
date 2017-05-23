@@ -85,13 +85,17 @@ def play_shoe():
         #Placing bet
         if aux > 9:
             
-            if count >= 16:
+            if count >= 128:
                 betting_on = 'PLAYER'
-            else:
-                betting_on = 'BANKER'
+
+                bets += 1
+                wallet += -1
+            #else:
+                #betting_on = 'BANKER'
+                #bets += 1
+                #wallet += -1
             
-            bets += 1
-            wallet += -1          
+                      
             
         
         #Dealing cards
