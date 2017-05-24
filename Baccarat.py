@@ -8,9 +8,6 @@ game_type="standard"
 
 no_games = 1000000
 
-global no_decks
-no_decks = 8
-
 global wallet
 wallet = 10000000
 
@@ -20,61 +17,30 @@ earnings = 0
 global betsize
 betsize = 1 
 
-def usage():
-    print "Usage: python baccarat_test.py [-t|--type EZ|standard (default)] [-g|--games <# games> (1M default)]. "
 
-
-#opts = getopt.getopt(sys.argv[1:], "t:", ["type="])
-try:
-    opts, args = getopt.getopt(sys.argv[1:], "g:t:", ["type=", "games="])
-except getopt.GetoptError as err:
-    # print help information and exit:
-    print str(err) # will print something like "option -a not recognized"
-    usage()
-    sys.exit(2)
-
-for o, a in opts:
-    if o in ("-t", "--type"):
-        if (a.lower() == "ez" or a.lower() == "standard"):
-            game_type = a.lower()
-            print "Playing " + a + " style baccarat"
-        else:
-            print "Unrecognized game type. Only 'EZ' and 'standard' are supported"
-    elif o in ("-g", "--games"):
-        no_games = int(a)
-    else:
-        assert False, "unhandled option"
-
-def check_winner(player_sum, banker_sum, player_cards, banker_cards):
+def check_winner(player_sum, banker_sum):
+    
     if (player_sum > banker_sum):
-        
-        ##if (game_type == "ez" and player_cards == 3 and player_sum == 8):
-        ##    return 'PANDA'
-        
         return 'PLAYER'
     
     elif (banker_sum > player_sum):
-        
-        ##if (game_type == "ez" and banker_cards == 3 and banker_sum == 7):
-        ##    return 'DRAGON'
-        
         return 'BANKER'
     
     else:
         return 'TIE'
 
 def shoe_shuffle():
-    suit = [(1,1), (2,1), (3,1), (4,2), (5,-1), (6,-2), (7,-1), (8,-1), (9,0), (10,0), (10,0), (10,0), (10,0)]
+
+    suit = [(1,1), (2,1), (3,2), (4,2), (5,-1), (6,-2), (7,-2), (8,-1), (9,0), (10,0), (10,0), (10,0), (10,0)]
     deck = suit + suit + suit + suit
-    if no_decks != 8:
-        bdeck = deck + deck + deck + deck + deck + deck
-    else:
-        bdeck = deck + deck + deck + deck + deck + deck + deck + deck
+    bdeck = deck + deck + deck + deck + deck + deck + deck + deck
     random.shuffle(bdeck)
     random.shuffle(bdeck)
+
     return bdeck
 
 def play_shoe():
+
     shoe = shoe_shuffle()
     card_limit = 26
     shoe = shoe[shoe[0][0]+1:]
@@ -93,25 +59,27 @@ def play_shoe():
         #Placing bet
         if aux > 9:
             
-            if count >= 16:
+            if count < -5 :
                 betting_on = 'PLAYER'
                 
-                if count > 40:
+                if count < -24:
                     bets = betsize + 2
                     earnings += -betsize - 2
                 else:
                     bets = betsize
                     earnings += -betsize
 
+            #elif count > 3:
+             #   betting_on = 'BANKER'
+              #  
+               # if count > 24:
+                #    bets = betsize + 2
+                 #   earnings += -betsize - 2
+                #else:
+                 #   bets = betsize
+                  #  earnings += -betsize
             else:
-                betting_on = 'BANKER'
-                
-                if count < -16:
-                    bets = betsize + 2
-                    earnings += -betsize - 2
-                else:
-                    bets = betsize
-                    earnings += -betsize         
+                betting_on = ''     
             
         
         #Dealing cards
@@ -195,7 +163,7 @@ def play_shoe():
                 #else:
                     #bank does not take a third card, done 
                     
-        winner = check_winner(player_sum, banker_sum, player_cards, banker_cards)
+        winner = check_winner(player_sum, banker_sum)
             
         if winner == 'TIE':
 
@@ -222,7 +190,7 @@ def play_shoe():
             wallet += earnings
             betsize = 1
             earnings = 0
-        elif earnings < -1000:
+        elif earnings < -25:
             wallet += earnings
             betsize = 1
             earnings = 0
