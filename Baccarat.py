@@ -14,6 +14,12 @@ no_decks = 8
 global wallet
 wallet = 10000000
 
+global earnings
+earnings = 0
+
+global betsize
+betsize = 1 
+
 def usage():
     print "Usage: python baccarat_test.py [-t|--type EZ|standard (default)] [-g|--games <# games> (1M default)]. "
 
@@ -70,32 +76,42 @@ def shoe_shuffle():
 
 def play_shoe():
     shoe = shoe_shuffle()
-    card_limit = 6
-    ##shoe = shoe[shoe[0][0]+1:]
-    betting_on = ''
-    bets = 0 
-    aux = 0 
+    card_limit = 26
+    shoe = shoe[shoe[0][0]+1:]
     
     global wallet
-    
+    global earnings
+    global betsize
+
+
     count = 0
+    betting_on = ''
+    aux = 0
     
     while len(shoe) > card_limit:
         
         #Placing bet
         if aux > 9:
             
-            if count >= 128:
+            if count >= 16:
                 betting_on = 'PLAYER'
+                
+                if count > 40:
+                    bets = betsize + 2
+                    earnings += -betsize - 2
+                else:
+                    bets = betsize
+                    earnings += -betsize
 
-                bets += 1
-                wallet += -1
-            #else:
-                #betting_on = 'BANKER'
-                #bets += 1
-                #wallet += -1
-            
-                      
+            else:
+                betting_on = 'BANKER'
+                
+                if count < -16:
+                    bets = betsize + 2
+                    earnings += -betsize - 2
+                else:
+                    bets = betsize
+                    earnings += -betsize         
             
         
         #Dealing cards
@@ -146,7 +162,7 @@ def play_shoe():
                     count += shoe[idx][1]
                     idx += 1
                                         
-                elif banker_sum == 4 and not (player_third_card in [0,1,8,9]):
+                elif banker_sum == 4 and not (player_third_card in [1,8,9,10]):
                     banker_cards += 1
                     banker_sum = (banker_sum + shoe[idx][0]) % 10
                     count += shoe[idx][1]
@@ -182,28 +198,39 @@ def play_shoe():
         winner = check_winner(player_sum, banker_sum, player_cards, banker_cards)
             
         if winner == 'TIE':
-            wallet += bets
-            bets = 0 
+
+            if betting_on != '':
+                earnings += bets
             
         elif winner == betting_on:
             
             if winner == 'PLAYER':
-                wallet += 2*bets
-                bets = 0
+                earnings += 2*bets
                 
             elif winner == 'BANKER':
-                wallet += 1.95*bets
-                bets = 0 
-        else:
-            bets = 0
+                earnings += 1.95*bets
             
-             
-        
+            if earnings <= 0:
+
+                if earnings + betsize + 1 > 1:
+                    betsize = 1 - earnings
+
+                else:
+                    betsize += 1   
+            
+        if earnings > 0:
+            wallet += earnings
+            betsize = 1
+            earnings = 0
+        elif earnings < -1000:
+            wallet += earnings
+            betsize = 1
+            earnings = 0
+            
         shoe = shoe[idx:]
         aux += 1
-        
-        
-    #return [count,shoe]
+
+
 
 for i in range(1, no_games):
 
